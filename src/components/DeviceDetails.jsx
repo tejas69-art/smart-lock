@@ -8,7 +8,7 @@ import Swal from 'sweetalert2'; // For alert pop-up
 
 // Firebase configuration
 const firebaseConfig = {
-  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
+  databaseURL: "https://craft-f3af3-default-rtdb.asia-southeast1.firebasedatabase.app/",
 };
 
 const app = initializeApp(firebaseConfig);
@@ -55,6 +55,7 @@ const DeviceDetails = () => {
             payment: deviceData.payment?.value || null,
             vibration: deviceData.vibration?.value || 'No data',
             vehicleNumber: deviceData.vehicleNumber || '',
+            open: deviceData.open?.value || 0, // Add open status
           });
           setVehicleNumber(deviceData.vehicleNumber || '');
         } else {
@@ -72,10 +73,39 @@ const DeviceDetails = () => {
   }
 
   const handleToggleLock = () => {
-    setDevice((prevDevice) => ({
-      ...prevDevice,
-      status: prevDevice.status.includes('locked') ? 'Unlocked' : 'Payment received and locked',
-    }));
+    const openRef = ref(db, `devices/${id}/open`);
+    
+    if (device.open === 1) {
+      // If already open, remove the open status
+      remove(openRef)
+        .then(() => {
+          setDevice((prevDevice) => ({
+            ...prevDevice,
+            open: 0,
+            status: 'Closed'
+          }));
+          Swal.fire('Device Closed', '', 'success');
+        })
+        .catch((error) => {
+          console.error("Error closing device:", error);
+          Swal.fire('Error', 'Failed to close device', 'error');
+        });
+    } else {
+      // Set open status to 1
+      set(openRef, { value: 1 })
+        .then(() => {
+          setDevice((prevDevice) => ({
+            ...prevDevice,
+            open: 1,
+            status: 'Open'
+          }));
+          Swal.fire('Device Opened', '', 'success');
+        })
+        .catch((error) => {
+          console.error("Error opening device:", error);
+          Swal.fire('Error', 'Failed to open device', 'error');
+        });
+    }
   };
 
   const handleVehicleNumberSave = () => {
@@ -155,7 +185,7 @@ const DeviceDetails = () => {
         Save Vehicle Number
       </button>
       <button onClick={handleToggleLock} className="blue-button">
-        {device.status.includes('locked') ? 'Unlock Device' : 'Lock Device'}
+        {device.open === 1 ? 'Close Device' : 'Open Device'}
       </button>
       <button onClick={handleVehicleNumberDelete} className="secondary-button">
         Returned

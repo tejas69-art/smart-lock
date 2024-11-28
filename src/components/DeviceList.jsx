@@ -7,9 +7,8 @@ import { getDatabase, ref, onValue, off, remove } from 'firebase/database';
 import { Button, CircularProgress, Typography, Box } from '@mui/material';
 
 const firebaseConfig = {
-  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
+  databaseURL:"https://craft-f3af3-default-rtdb.asia-southeast1.firebasedatabase.app/",
 };
-
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
@@ -105,6 +104,13 @@ const DeviceList = () => {
     return 'text-blue-500';
   };
 
+  const handleLogout = () => {
+    // Handle logout logic here, such as clearing authentication tokens
+    console.log("User logged out");
+    // You could redirect to a login page or a public page after logging out
+    navigate('/login'); // Example, redirecting to the login page
+  };
+
   if (loading) {
     return (
       <Box display="flex" alignItems="center" justifyContent="center" minHeight="100vh">
@@ -153,7 +159,7 @@ const DeviceList = () => {
                 <Box display="flex" alignItems="center" gap={1.5}>
                   <KeyRound className="h-6 w-6 text-gray-500" />
                   <Box>
-                    <Typography variant="body1">Device:{device.id}</Typography>
+                    <Typography variant="body1">Device: {device.id}</Typography>
                     <Box display="flex" alignItems="center" gap={1}>
                       <Battery className={`h-4 w-4 ${getBatteryColor(device.batteryPercentage)}`} />
                       <Typography
@@ -182,6 +188,23 @@ const DeviceList = () => {
           </Box>
         </CardContent>
       </Card>
+
+      {/* Logout Button */}
+      <Box mt={4} display="flex" justifyContent="center">
+        <Button
+          variant="contained"
+          color="secondary"
+          size="large"
+          onClick={handleLogout}
+          sx={{
+            width: '200px',
+            boxShadow: 3,
+            '&:hover': { boxShadow: 6 },
+          }}
+        >
+          Logout
+        </Button>
+      </Box>
     </Box>
   );
 };
